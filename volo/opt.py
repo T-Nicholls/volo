@@ -1,21 +1,15 @@
-import os
 import sys
-from collections import OrderedDict
 from functools import partial
 
 import at
-import at.plot
 import atip
-import math
 import numpy
 import optimizer
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-from PyQt5.QtCore import Qt, QMargins, QMimeData, QEvent
-from PyQt5.QtGui import QPainter, QDrag, QDoubleValidator, QValidator
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QGroupBox, QWidget,
-                             QVBoxLayout, QHBoxLayout, QLabel, QGridLayout,
-                             QLineEdit, QComboBox, QPushButton)
+from PyQt5.QtGui import QDoubleValidator, QValidator
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+                             QLabel, QGridLayout, QLineEdit, QComboBox,
+                             QPushButton)
+
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
@@ -90,20 +84,25 @@ class Window(QMainWindow):
             field = QComboBox()
             cell = QComboBox()
             value = QLineEdit()
+            index.textChanged.connect(partial(self.var_index, field, cell,
+                                              value))
             field.setSizeAdjustPolicy(0)
             field.currentTextChanged.connect(partial(self.var_field, index,
                                                      cell))
             cell.currentTextChanged.connect(partial(self.var_cell, index,
                                                     field, value))
-            index.textChanged.connect(partial(self.var_index,
-                                              field, cell, value))
             self.variable_list.append((index, field, cell, value))
             self.add_variable_box()
         else:
             print("If you really need > 25 variable use the terminal client.")
 
+    def update_combo_box(self, box, items):
+        for i in range(box.count()):
+            box.removeItem(0)
+        box.addItems(items)
+
     def var_index(self, field_box, cell_box, value_box, index):
-        ignored_fields = ['FamName', 'PassMethod', 'Class', 'Index',
+        ignored_fields = ['FamName', 'PassMethod', 'Class', 'Index', 'Type',
                           'R1', 'R2', 'T1', 'T2']
         elem = self.lattice[int(index)]
         fields = []
@@ -114,6 +113,7 @@ class Window(QMainWindow):
                         fields.append(key)
                 elif numpy.issubdtype(type(value), numpy.number):
                     fields.append(key)
+        fields.sort()
         self.update_combo_box(field_box, fields)
 
     def var_field(self, index_box, cell_box, field):
@@ -127,24 +127,22 @@ class Window(QMainWindow):
                     else:
                         self.update_combo_box(cell_box, [str(c) for c in
                                                          range(len(value))])
+                elif len(value.shape) == 0:
+                    self.update_combo_box(cell_box, [''])
                 else:
+                    print(field, value)
                     raise MemoryError("I know this is possible, I just don't "
                                       "have the time to figure it out now.")
             else:
                 self.update_combo_box(cell_box, [''])
 
-    def update_combo_box(self, box, items):
-        for i in range(box.count()):
-            box.removeItem(i)
-        box.addItems(items)
-
     def var_cell(self, index_box, field_box, value_box, cell):
         elem = self.lattice[int(index_box.text())]
-        if cell == '':
-            value_box.setText(str(vars(elem)[field_box.currentText()]))
+        val = vars(elem)[field_box.currentText()]
+        if isinstance(val, numpy.ndarray) and (cell != ''):
+            value_box.setText(str(val[int(cell)]))
         else:
-            print(cell, vars(elem)[field_box.currentText()])
-            value_box.setText(str(vars(elem)[field_box.currentText()][int(cell)]))
+            value_box.setText(str(val))
 
 
 if __name__ == '__main__':

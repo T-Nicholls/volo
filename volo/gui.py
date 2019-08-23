@@ -27,7 +27,9 @@ class Window(QMainWindow):
         ring = atip.utils.load_at_lattice('DIAD')
         sp_len = ring.circumference/6.0
         ring.s_range = [0, sp_len]
-        self.lattice = ring[ring.i_range[0]:ring.i_range[-1]]# + [ring[1491]]
+        #cav = ring[1491]
+        #cav.Index = ring.i_range[-1]
+        self.lattice = ring[ring.i_range[0]:ring.i_range[-1]]# + [cav]
         """
         self.lattice = at.load_tracy('../atip/atip/rings/for_Tobyn.lat')
         zl = []

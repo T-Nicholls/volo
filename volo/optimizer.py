@@ -62,7 +62,7 @@ class Constraints(object):
             elif callable(key):
                 pass
             else:
-                if (len(weights)>1) and (len(refpts) != len(weights)):
+                if (len(weights) > 1) and (len(refpts) != len(weights)):
                     raise IndexError("Field {0}: List of weights must be of "
                                      "length 1 or the same length as refpts."
                                      .format(key))
@@ -93,9 +93,11 @@ class Constraints(object):
             'chrom_x': lindata[2][0], 'chrom_y': lindata[2][1],
             'beta_x': lindata[3].beta[:, 0], 'beta_y': lindata[3].beta[:, 1],
             'mu_x': lindata[3].mu[:, 0], 'mu_y': lindata[3].mu[:, 1],
-            'eta_x': lindata[3].dispersion, 'eta_px': lindata[3].dispersion,
-            'eta_y': lindata[3].dispersion, 'eta_py': lindata[3].dispersion,
-            'dispersion': lindata[3].dispersion, 'gamma': lindata[3].gamma,
+            'eta_x': lindata[3].dispersion[:, 0],
+            'eta_px': lindata[3].dispersion[:, 1],
+            'eta_y': lindata[3].dispersion[:, 2],
+            'eta_py': lindata[3].dispersion[:, 3],
+            'gamma': lindata[3].gamma,
             'alpha_x': lindata[3].alpha[:, 0],
             'alpha_y': lindata[3].alpha[:, 1],
             'x': lindata[3].closed_orbit[:, 0],

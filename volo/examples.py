@@ -1,6 +1,4 @@
 import at
-import numpy
-import atip.ease as e
 import optimizer as o
 
 
@@ -40,9 +38,10 @@ def example1():
     constraints = o.Constraints(lattice, {'tune_x': [[], [0.36], [2]],
                                           'tune_y': [[], [0.64], [1]]})
     optimizer = o.Optimizer(constraints, variables)
-    return opt.run(verbosity=1, gtol=None)
+    return optimizer.run(verbosity=1, gtol=None)
 
-# Minimising the beta function at two given points:
+
+# Minimising the dispersion at the centre of a cell whilst keeping it periodic:
 def example2():
     lattice = at.load_tracy('../atip/atip/rings/for_Tobyn.lat')
     qd2s = lattice.get_elements('qd2')
@@ -53,7 +52,7 @@ def example2():
     vals = [qd2s[0].PolynomB[1], qd5s[0].PolynomB[1], qd3s[0].PolynomB[1],
             qf1s[0].PolynomB[1], qf6s[0].PolynomB[1]]
 
-    # The generalisation from exapmle1 could be taken further e.g. using:
+    # The generalisation from example1 could be taken further e.g. using:
     def edit_family(ring, ffc, value):
         family, field, cell = ffc
         for elem in ring.get_elements(family):
@@ -65,10 +64,12 @@ def example2():
          ('qf1', 'PolynomB', 1), ('qf6', 'PolynomB', 1)],
         vals
     )
-    constraints = o.Constraints(lattice,
-                                {'beta_x': [[141, 250], [0.4, 0.4], [1, 1]]})
+    constraints = o.Constraints(lattice, {'eta_x': [[0, 52, 103], [0, 0.02, 0],
+                                                    [5, 1, 5]]})
     optimizer = o.Optimizer(constraints, variables)
     return optimizer.run(verbosity=1)
 
-example1()
-example2()
+
+if __name__ == '__main__':
+    example1()
+    example2()
