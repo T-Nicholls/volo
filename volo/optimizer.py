@@ -141,19 +141,28 @@ class Constraints(object):
         """
         self.make_changes(values, variables)
         if not all([callable(key) for key in self.desired_constraints.keys()]):
-            constraints = self.convert_lindata(self.calc_lindata())
-        residuals = []
-        for key in self.desired_constraints.keys():
-            if callable(key):
-                diff = key(self.lattice, self.desired_constraints[key],
-                           **kwargs)
+            try:
+                lindata = self.calc_lindata()
+            except ValueError:
+                transfer_matrix, _ = at.find_m44(self.lattice)
             else:
-                diff = constraints[key] - self.desired_constraints[key][1]
-            try:  # array
-                residuals.extend(diff * self.desired_constraints[key][2])
-            except TypeError:  # scalar
-                residuals.append(diff * self.desired_constraints[key][2])
-        return residuals
+                transfer_matrix = None
+                constraints = self.convert_lindata(lindata)
+        residuals = []
+        if transfer_matrix is not None:
+            return [numpy.trace(transfer_matrix)]
+        else:
+            for key in self.desired_constraints.keys():
+                if callable(key):
+                    diff = key(self.lattice, self.desired_constraints[key],
+                               **kwargs)
+                else:
+                    diff = constraints[key] - self.desired_constraints[key][1]
+                try:  # array
+                    residuals.extend(diff * self.desired_constraints[key][2])
+                except TypeError:  # scalar
+                    residuals.append(diff * self.desired_constraints[key][2])
+            return residuals
 
 
 class Optimizer(object):
